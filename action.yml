@@ -1,5 +1,5 @@
 name: primitive.dev - Deploy Function
-description: Deploy a Primitive Function to primitive.dev. Idempotent — creates on first run, updates the bundle on subsequent runs.
+description: Deploy a Primitive Function to primitive.dev - Idempotent — creates on first run, updates the bundle on subsequent runs.
 author: primitive.dev
 
 branding:
