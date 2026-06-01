@@ -7,7 +7,7 @@ GitHub Action that deploys a [Primitive Function](https://primitive.dev) to prim
 ```yaml
 - uses: actions/checkout@v4
 - run: pnpm install --frozen-lockfile && pnpm build
-- uses: primitivedotdev/deploy-function@v1
+- uses: primitivedotdev/deploy-function@v0
   with:
     api-key: ${{ secrets.PRIMITIVE_API_KEY }}
     name: my-function
@@ -51,7 +51,7 @@ Add to it via the `ignore` input — basenames anywhere in the tree, exact match
 ### Minimal — pre-built bundle
 
 ```yaml
-- uses: primitivedotdev/deploy-function@v1
+- uses: primitivedotdev/deploy-function@v0
   with:
     api-key: ${{ secrets.PRIMITIVE_API_KEY }}
     name: my-function
@@ -61,7 +61,7 @@ Add to it via the `ignore` input — basenames anywhere in the tree, exact match
 ### With custom secrets and an org-id guard
 
 ```yaml
-- uses: primitivedotdev/deploy-function@v1
+- uses: primitivedotdev/deploy-function@v0
   with:
     api-key: ${{ secrets.PRIMITIVE_API_KEY }}
     expected-org-id: ${{ vars.PRIMITIVE_ORG_ID }}
@@ -82,7 +82,7 @@ Skip the build step and hand the platform your source. The platform bundles serv
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: primitivedotdev/deploy-function@v1
+- uses: primitivedotdev/deploy-function@v0
   with:
     api-key: ${{ secrets.PRIMITIVE_API_KEY }}
     name: my-function
@@ -100,7 +100,7 @@ Skip the build step and hand the platform your source. The platform bundles serv
 
 ```yaml
 - id: deploy
-  uses: primitivedotdev/deploy-function@v1
+  uses: primitivedotdev/deploy-function@v0
   with:
     api-key: ${{ secrets.PRIMITIVE_API_KEY }}
     name: my-function

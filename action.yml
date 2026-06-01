@@ -1,9 +1,5 @@
 name: Deploy Primitive Function
-description: >-
-  Deploys a Primitive Function to primitive.dev via the public API.
-  Idempotent: creates the function on first run, updates the bundle
-  on subsequent runs. Manages custom function_secrets in lockstep
-  with the deploy and triggers a redeploy when bindings change.
+description: Deploy a Primitive Function to primitive.dev. Idempotent — creates on first run, updates the bundle on subsequent runs.
 author: primitive.dev
 
 branding:
