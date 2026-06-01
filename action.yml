@@ -1,0 +1,100 @@
+name: Deploy Primitive Function
+description: >-
+  Deploys a Primitive Function to primitive.dev via the public API.
+  Idempotent: creates the function on first run, updates the bundle
+  on subsequent runs. Manages custom function_secrets in lockstep
+  with the deploy and triggers a redeploy when bindings change.
+author: primitive.dev
+
+branding:
+  icon: send
+  color: blue
+
+inputs:
+  api-key:
+    description: >-
+      Primitive API key. Org-scoped; must belong to the org you are
+      deploying into. Pass via a GitHub secret reference (see README
+      for the usage example) — never hard-code. Masked in logs.
+    required: true
+  api-base-url:
+    description: >-
+      Primitive API base URL. Defaults to production. Set to a
+      non-production URL if you are deploying against a custom
+      environment.
+    required: false
+    default: https://api.primitive.dev/v1
+  name:
+    description: >-
+      Function name. Lowercase letters, digits, dashes, underscores;
+      max 64 chars. Idempotent within the org.
+    required: true
+  code-path:
+    description: >-
+      Path to the pre-built ESM bundle (e.g. `dist/handler.js`). The
+      build is the caller's responsibility; this Action only uploads.
+      Exactly one of `code-path` and `files-path` is required.
+    required: false
+  source-map-path:
+    description: >-
+      Optional path to the bundle's source map. When present, surfaces
+      readable stack traces in the dashboard's invocation logs.
+      Only valid with `code-path`.
+    required: false
+  files-path:
+    description: >-
+      Path to a source directory for managed build mode. The Action
+      walks the directory, applies the default + caller ignore
+      patterns, and sends the resulting `{relative-path: contents}`
+      map as the `files` field. The directory MUST contain a
+      `package.json` at the root. Requires the
+      `functions_managed_build` entitlement on the org. Exactly one
+      of `code-path` and `files-path` is required.
+    required: false
+  ignore:
+    description: >-
+      Additional ignore patterns layered on top of the default list
+      (`node_modules`, `.git`, `.github`, `dist`, `build`, `.next`,
+      `.turbo`, `.vercel`, `coverage`, `.DS_Store`, `.env`,
+      `.env.local`, `.env.*`). One pattern per line. Each pattern is
+      matched against basenames anywhere in the tree. Supports exact
+      names (`secrets.txt`) or simple globs (`*.log`, `*.test.ts`).
+      `#` comments and blank lines allowed. Only used with
+      `files-path`.
+    required: false
+    default: ''
+  secrets:
+    description: >-
+      JSON object of custom function_secrets to upsert before deploy.
+      Values are masked in logs. Example:
+      `{"OPENAI_API_KEY":"sk-…","FEATURE_FLAG":"on"}`. Pass an empty
+      object (or omit) to leave existing secrets untouched.
+    required: false
+    default: '{}'
+  redeploy-on-secret-change:
+    description: >-
+      When `true` and at least one secret was upserted, call
+      `/v1/functions/{id}/redeploy` after the upsert so the new
+      bindings are wired into the runtime. Default `true`. Safe to
+      leave on; the redeploy is a no-op when nothing changed.
+    required: false
+    default: 'true'
+  expected-org-id:
+    description: >-
+      Optional safety guard. When set, the Action calls `/v1/whoami`
+      before any write and aborts if the API key's org differs from
+      this value. Strongly recommended in production workflows to
+      prevent a leaked-key cross-org incident.
+    required: false
+
+outputs:
+  function-id:
+    description: UUID of the created or updated function.
+  deploy-status:
+    description: '`deployed`, `pending`, or `failed` (the platform-reported state after this run).'
+  created:
+    description: '`true` on initial create, `false` on update.'
+
+runs:
+  using: node20
+  main: dist/index.js

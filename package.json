@@ -1,0 +1,24 @@
+{
+  "name": "@primitivedotdev/deploy-function-action",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub Action for deploying a Primitive Function from CI. Authored in primitive-mono-repo; mirrored to primitivedotdev/deploy-function on release tags.",
+  "type": "module",
+  "scripts": {
+    "build": "ncc build src/index.ts --out dist --minify --source-map --license licenses.txt",
+    "typecheck": "tsc --noEmit",
+    "test:run": "vitest run",
+    "test": "vitest",
+    "lint:dist": "node scripts/check-dist.mjs"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@vercel/ncc": "^0.38.4",
+    "typescript": "~6.0.3",
+    "vitest": "^4.0.15"
+  }
+}
