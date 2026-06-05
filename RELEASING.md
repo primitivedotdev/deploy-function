@@ -4,26 +4,15 @@ This Action is authored in [`primitivedotdev/primitive-mono-repo`](https://githu
 
 The mirror is **one-way**: every release wipes the public tree and force-replaces it with the contents of `tools/actions/deploy-function/`. No PRs are accepted against the public repo.
 
+Publishing is handled by the **generalized** [`mirror-action.yml`](../../../.github/workflows/mirror-action.yml) workflow, shared by every action under `tools/actions/`. There is no per-action mirror workflow. The workflow is a **thin tag-triggered caller** — it does only auth setup (OIDC + the App installation token); the mirror logic (parse the tag, assert the action exists + is reachable from `main`, create the public repo on first publish, mirror the subtree, move the tags) lives in the typed, unit-tested deploy-engine (`pnpm --filter @primitivedotdev/deploy-engine deploy-worker mirror-action`), the same engine every other deploy in this repo routes through.
+
+> **`dist/` parity is CI-enforced.** Because the published action runs the committed `dist/index.js`, the `actions` job in [`ci.yml`](../../../.github/workflows/ci.yml) **blocks** PRs on `typecheck` + `test:run` + `lint:dist` (the `check-dist.mjs` parity guard) for every action. A stale `dist/` can no longer merge — rebuild with `pnpm --filter @primitivedotdev/deploy-function-action build` and commit.
+
 ## One-time setup
 
-Done once when this Action goes public.
+The generalized mirror **creates `primitivedotdev/deploy-function` on first publish** if it doesn't exist (it needs the `primitive-ci` App to have org `Administration: write`; if the App lacks that, the create step prints a `gh repo create …` command to run once by hand). The App is installed at the **org level with `repository_selection: "all"`**, so a freshly created repo is covered automatically — no per-repo install step. The App credential is read at run time from AWS Secrets Manager (`staging/github-ci-app`) via the existing OIDC role; no GitHub Actions secret to manage.
 
-### 1. Create the public repo
-
-```bash
-gh repo create primitivedotdev/deploy-function \
-  --public \
-  --description "GitHub Action for deploying a Primitive Function — primitive.dev" \
-  --homepage https://primitive.dev
-```
-
-Leave the repo empty — the first tag push from this monorepo populates it.
-
-### 2. (Nothing) — the App auth is already wired up
-
-The mirror workflow authenticates as the `primitive-ci` GitHub App, the same App used by `sync-staging-to-main`. The App is installed at the **org level with `repository_selection: "all"`**, so `deploy-function` is covered automatically the moment the repo is created — no per-repo install step is needed. The App credential is read at run time from AWS Secrets Manager (`staging/github-ci-app`) via the existing OIDC role; no GitHub Actions secret to manage.
-
-If `repository_selection` ever changes to `selected` in the future, add `deploy-function` to the install's repository list.
+> **Marketplace:** the mirror pushes git tags only — listing the action on the GitHub Marketplace is a separate one-time manual step (publish a release from the public repo's UI and accept the Marketplace agreement).
 
 ## Cutting a release
 
@@ -42,7 +31,7 @@ If `repository_selection` ever changes to `selected` in the future, add `deploy-
 
    ```bash
    gh run watch \
-     "$(gh run list --workflow mirror-deploy-function-action.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
+     "$(gh run list --workflow mirror-action.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
    ```
 
 5. **Confirm the public repo updated**:
